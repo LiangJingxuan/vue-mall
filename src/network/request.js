@@ -3,7 +3,8 @@ import axios from 'axios'
 export function request(config){
     // 创建axios的实例
     const instance = axios.create({
-        baseURL: 'http://123.207.32.32:8000',
+        // baseURL: 'http://123.207.32.32:8000',
+        baseURL: 'https://api.juanertu.com',
         timeout: 5000
     })
     // axios拦截器-请求拦截
