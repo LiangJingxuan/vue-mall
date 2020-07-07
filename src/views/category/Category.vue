@@ -1,13 +1,22 @@
 <template>
-  
+    
 </template>
 
 <script>
+
 export default {
-    name: 'Category'
+    name: 'Category',
+    data() {
+        return {
+            
+        }
+    },
+    mounted() {
+        
+    },
 }
 </script>
 
 <style>
-
+   
 </style>
