@@ -47,8 +47,8 @@ export default {
 
   .goods-info {
     font-size: 12px;
-    position: absolute;
-    bottom: 5px;
+    position: relative;
+    bottom: -4px;
     left: 0;
     right: 0;
     overflow: hidden;
