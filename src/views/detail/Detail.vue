@@ -1,14 +1,17 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav" />
-    <scroll class="content" ref="scroll">
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav" />
+    <scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll">
       <detail-swiper :top-images="topImages" />
       <detail-base-info :goods="goods" />
       <detail-shop-info :shop="shop" />
       <detail-goods-info :detail-info="detailInfo" @imgLoad="imgLoad" />
-      <detail-param-info :param-info="paramInfo" />
-      <detail-comment-info :comment-info="commentInfo" />   
+      <detail-param-info ref="params" :param-info="paramInfo" />
+      <detail-comment-info ref="comment" :comment-info="commentInfo" />
+      <goods-list ref="recommend" :goods="recommends" />
     </scroll>
+    <back-top @click.native="backClick" v-show="isShowBackTop" />
+    <detail-bottom-bar @addCart="addToCart" />
   </div>
 </template>
 
@@ -20,10 +23,13 @@ import DetailShopInfo from './childComps/DetailShopInfo'
 import DetailGoodsInfo from './childComps/DetailGoodsInfo'
 import DetailParamInfo from './childComps/DetailParamInfo'
 import DetailCommentInfo from './childComps/DetailCommentInfo'
+import DetailBottomBar from './childComps/DetailBottomBar'
 
 import Scroll from 'components/common/scroll/Scroll'
+import GoodsList from 'components/content/goods/GoodsList'
 
-import { getDetail, GoodsInfo, Shop, GoodsParam } from 'network/detail'
+import { getDetail, GoodsInfo, Shop, GoodsParam, getRecommend } from 'network/detail'
+import { itemListenerMixin, backTopMixin } from 'common/mixin'
 
 export default {
   name: 'Detail',
@@ -35,8 +41,11 @@ export default {
     DetailGoodsInfo,
     DetailParamInfo,
     DetailCommentInfo,
-    Scroll
+    DetailBottomBar,
+    Scroll,
+    GoodsList,
   },
+  mixins: [ itemListenerMixin, backTopMixin ],
   data() {
     return {
       iid: null,
@@ -45,7 +54,10 @@ export default {
       shop: {},
       detailInfo: {},
       paramInfo: {},
-      commentInfo: {}
+      commentInfo: {},
+      recommends: [],
+      themeTopYs: [],
+      currentIndex: 0,
     }
   },
   created() {
@@ -74,12 +86,79 @@ export default {
 
         // 获取评论信息
         this.commentInfo = data.rate.cRate ? data.rate.list[0] : {}
+
+        // 数据渲染完之后执行的函数
+        this.$nextTick(() => {
+          
+        })
       })
+
+    // 请求推荐数据
+    getRecommend().then(res => {
+      this.recommends = res.data.list
+    })
   },
   methods: {
+    // 图片加载监听
     imgLoad(){
       this.$refs.scroll.refresh()
+      // 点击导航跳转对应位置
+      this.themeTopYs = [];
+      this.themeTopYs.push(0)
+      this.themeTopYs.push(this.$refs.params.$el.offsetTop)
+      this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
+      this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+      // console.log(this.themeTopYs)
+    },
+    // 点击导航跳转对应位置
+    titleClick(index){
+      // console.log(index)
+      this.$refs.scroll.scrollTo(0, -this.themeTopYs[index], 500)
+    },
+    // 滚动内容显示对应标题
+    contentScroll(position){
+      // console.log(position)
+      // 获取y值
+      const positionY = -position.y
+      // y值和主题中的值进行对比
+      let length = this.themeTopYs.length
+      for(let i=0; i<length; i++){
+        if( this.currentIndex!==i && 
+          ((i<length-1 && positionY>=this.themeTopYs[i] && positionY<this.themeTopYs[i+1]) || 
+          (i === length-1 && positionY>=this.themeTopYs[i])) ){
+            this.currentIndex = i
+            this.$refs.nav.currentIndex = this.currentIndex
+        }
+      }
+
+      // 判断backtop是否显示
+      this.isShowBackTop =  (-position.y) > 1000
+    },
+    // 加入购物车
+    addToCart(){
+      // 1. 获取购物车需要展示的信息
+      const product = {}
+      product.image = this.topImages[0]
+      product.title = this.goods.title
+      product.desc = this.goods.desc
+      product.price = this.goods.realPrice
+      product.iid = this.iid
+      
+      // 2. 将商品添加到购物车
+      // this.$store.commit('addCart', product)
+      this.$store.dispatch('addCart', product)
+
     }
+  },
+  mounted() {
+    
+  },
+  updated() {
+    
+  },
+  destroyed() {
+      // 取消全局事件监听
+      this.$bus.$off('itemImageLoad', this.itemImgListener)
   },
 }
 </script>
@@ -97,6 +176,6 @@ export default {
   background: #ffffff;
 }
 .content{
-  height: calc(100% - 44px);
+  height: calc(100% - 44px - 49px);
 }
 </style>

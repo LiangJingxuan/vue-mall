@@ -1,5 +1,6 @@
 import { request } from 'network/request.js'
 
+// 详情数据
 export function getDetail(iid){
   return request({
     url: '/mallapi/detail',
@@ -8,7 +9,6 @@ export function getDetail(iid){
     }
   })
 }
-
 export class GoodsInfo {
   constructor(itemInfo, columns, services){
     this.title = itemInfo.title
@@ -21,7 +21,6 @@ export class GoodsInfo {
     this.realPrice = itemInfo.lowNowPrice
   }
 }
-
 export class Shop {
   constructor(shopInfo) {
     this.logo = shopInfo.shopLogo;
@@ -32,7 +31,6 @@ export class Shop {
     this.goodsCount = shopInfo.cGoods
   }
 }
-
 export class GoodsParam {
 	constructor(info, rule) {
 		// images可能没有值(某些商品有值, 某些没有值)
@@ -40,4 +38,11 @@ export class GoodsParam {
 		this.infos = info.set;
 		this.sizes = rule.tables;
 	}
+}
+
+// 推荐数据
+export function getRecommend(){
+  return request({
+    url: '/mallapi/recommend'
+  })
 }
