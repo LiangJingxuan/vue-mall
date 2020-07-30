@@ -146,7 +146,10 @@ export default {
       
       // 2. 将商品添加到购物车
       // this.$store.commit('addCart', product)
-      this.$store.dispatch('addCart', product)
+      this.$store.dispatch('addCart', product).then(res => {
+        // console.log(res)
+        this.$toast.show(res)
+      })
 
     }
   },
