@@ -18,7 +18,7 @@ const routes = [
 ]
 const router = new VueRouter({
     routes,
-    mode: 'history'
+    mode: 'hash'
 })
 // 解决重复点报错问题
 const originalPush = VueRouter.prototype.push
